@@ -200,11 +200,11 @@ wait_for_pods() {
 expose_service() {
     log_info "Exponiendo el servicio..."
 
-    # Obtener URL del servicio (suprime errores con 2>/dev/null)
-    SERVICE_URL=$(minikube service static-website-deployment --url 2>/dev/null)
+    # Obtener URL del servicio 
+    SERVICE_URL=$(minikube service static-website-deployment --url 2>/dev/null)&
 
     if [ -z "$SERVICE_URL" ]; then
-        log_error "No se pudo obtener la URL del servicio. Verifica que el servicio esté correctamente creado."
+        log_error "No se pudo obtener la URL del servicio. Acceda manualmente al servicio con : minikube service static-website-deployment"
         return 1
     fi
 
@@ -215,9 +215,6 @@ expose_service() {
     log_info "Para acceder al sitio web, abre la siguiente URL en tu navegador:"
     echo -e "${GREEN}$SERVICE_URL${NC}"
 
-    # (Opcional) Abrir navegador automáticamente
-    log_info "Abriendo el navegador..."
-    minikube service static-website-deployment &
 }
 
 
@@ -225,7 +222,7 @@ expose_service() {
 # Funcion principal
 main(){
     log_info "Iniciando despliegue del sitio web estatico en Minikube..."
-
+    
     #Ejecutar funciones en orden 
     check_dependencies
     create_directories
@@ -235,9 +232,6 @@ main(){
     apply_manifests
     wait_for_pods
     expose_service
-
-    log_info "Proceso completo. ¡El sitio web esta desplegado!"
-
 }
 
 main "$@"
