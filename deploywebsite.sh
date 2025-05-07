@@ -110,22 +110,18 @@ restart_minikube(){
     log_info "Reiniciando Minikube..."
 
     # Detener Minikube si está en ejecución
-    if minikube status >/dev/null 2>&1; then
-        log_warning "Minikube está en ejecución. Deteniéndolo..."
-        minikube delete
-    fi
-    
-    # Iniciar Minikube con la configuración correcta
+    log_warning "Eliminando perfil de Minikube existente..."
+    minikube delete || true
     log_info "Iniciando Minikube con montaje del directorio del sitio web..."
-    minikube start --driver=docker --mount --mount-string="/mnt/c/Users/Usuario/CloudTD/static-website:/mnt/data"
+    minikube start --driver=docker --mount --mount-string="$WEBSITE_DIR:/mnt/web/static-website"
 
-
-    # Verificar que Minikube se haya iniciado correctamente
     if ! minikube status >/dev/null 2>&1; then
         log_error "Error al iniciar Minikube. Verifica la configuración y vuelve a intentarlo."
     fi
     
     log_info "Minikube iniciado exitosamente."
+
+
 }
 # Función para actualizar la ruta en el archivo PV
 update_pv_path() {
@@ -200,20 +196,8 @@ wait_for_pods() {
 expose_service() {
     log_info "Exponiendo el servicio..."
 
-    # Obtener URL del servicio 
-    SERVICE_URL=$(minikube service static-website-deployment --url 2>/dev/null)&
-
-    if [ -z "$SERVICE_URL" ]; then
-        log_error "No se pudo obtener la URL del servicio. Acceda manualmente al servicio con : minikube service static-website-deployment"
-        return 1
-    fi
-
-    # Guardar la URL en un archivo
-    echo "$SERVICE_URL" > "$BASE_DIR/URL_despliegue.txt"
-    log_info "¡Sitio web desplegado exitosamente!"
-    log_info "URL guardada en $BASE_DIR/URL_despliegue.txt"
-    log_info "Para acceder al sitio web, abre la siguiente URL en tu navegador:"
-    echo -e "${GREEN}$SERVICE_URL${NC}"
+    minikube service static-website-deployment &
+    sleep 3
 
 }
 
